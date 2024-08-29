@@ -5,43 +5,43 @@ pipeline {
         stage('Build') {
             steps {
                 echo 'Building...'
-                bat 'mvn clean install' // Example build step using Maven for Windows
+                sh 'mvn clean install' // Example build step using Maven
             }
         }
         stage('Unit and Integration Tests') {
             steps {
                 echo 'Running tests...'
-                bat 'mvn test' // Run unit and integration tests
+                sh 'mvn test' // Run unit and integration tests
             }
         }
         stage('Code Analysis') {
             steps {
                 echo 'Analyzing code...'
-                bat 'sonar-scanner' // Run SonarQube analysis for Windows
+                sh 'sonar-scanner' // Run SonarQube analysis
             }
         }
         stage('Security Scan') {
             steps {
                 echo 'Scanning for security vulnerabilities...'
-                bat 'dependency-check.bat --project JenkinsPipeline --scan .' // OWASP Dependency-Check for Windows
+                sh 'dependency-check.sh --project JenkinsPipeline --scan .' // OWASP Dependency-Check
             }
         }
         stage('Deploy to Staging') {
             steps {
                 echo 'Deploying to Staging...'
-                bat 'aws s3 cp target/my-app.jar s3://my-staging-bucket/' // Example deployment step for AWS S3 on Windows
+                sh 'aws s3 cp target/my-app.jar s3://my-staging-bucket/' // Example deployment step to AWS S3
             }
         }
         stage('Integration Tests on Staging') {
             steps {
                 echo 'Running integration tests on Staging...'
-                // Integration tests logic
+                // Assuming integration tests are run as part of deployment script
             }
         }
         stage('Deploy to Production') {
             steps {
                 echo 'Deploying to Production...'
-                bat 'aws s3 cp target/my-app.jar s3://my-production-bucket/' // Example deployment step for AWS S3 on Windows
+                sh 'aws s3 cp target/my-app.jar s3://my-production-bucket/' // Example deployment step to AWS S3
             }
         }
     }
@@ -49,7 +49,7 @@ pipeline {
     post {
         always {
             echo 'Cleaning up...'
-            deleteDir() // Clean up workspace
+            deleteDir() // clean up workspace
         }
         success {
             mail to: 'developer@example.com',
