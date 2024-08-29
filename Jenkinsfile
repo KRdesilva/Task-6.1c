@@ -1,65 +1,43 @@
 pipeline {
     agent any
-
+    environment {
+        DIRECTORY_PATH = '/path/to/code'
+        TESTING_ENVIRONMENT = 'staging'
+        PRODUCTION_ENVIRONMENT = 'production'
+    }
     stages {
         stage('Build') {
             steps {
-                echo 'Building...'
-                sh 'mvn clean install' // Example build step using Maven
+                echo "Fetching source code from directory: ${env.DIRECTORY_PATH}"
+                echo "Compile the code and generate any necessary artifacts"
             }
         }
-        stage('Unit and Integration Tests') {
+        stage('Test') {
             steps {
-                echo 'Running tests...'
-                sh 'mvn test' // Run unit and integration tests
+                echo "Running unit tests"
+                echo "Running integration tests"
             }
         }
-        stage('Code Analysis') {
+        stage('Code Quality Check') {
             steps {
-                echo 'Analyzing code...'
-                sh 'sonar-scanner' // Run SonarQube analysis
+                echo "Checking the quality of the code"
             }
         }
-        stage('Security Scan') {
+        stage('Deploy') {
             steps {
-                echo 'Scanning for security vulnerabilities...'
-                sh 'dependency-check.sh --project JenkinsPipeline --scan .' // OWASP Dependency-Check
+                echo "Deploying the application to ${env.TESTING_ENVIRONMENT}"
             }
         }
-        stage('Deploy to Staging') {
+        stage('Approval') {
             steps {
-                echo 'Deploying to Staging...'
-                sh 'aws s3 cp target/my-app.jar s3://my-staging-bucket/' // Example deployment step to AWS S3
-            }
-        }
-        stage('Integration Tests on Staging') {
-            steps {
-                echo 'Running integration tests on Staging...'
-                // Assuming integration tests are run as part of deployment script
+                echo "Waiting for manual approval"
+                sleep 10
             }
         }
         stage('Deploy to Production') {
             steps {
-                echo 'Deploying to Production...'
-                sh 'aws s3 cp target/my-app.jar s3://my-production-bucket/' // Example deployment step to AWS S3
+                echo "Deploying the application to ${env.PRODUCTION_ENVIRONMENT}"
             }
-        }
-    }
-
-    post {
-        always {
-            echo 'Cleaning up...'
-            deleteDir() // clean up workspace
-        }
-        success {
-            mail to: 'developer@example.com',
-                 subject: "Pipeline Success: ${env.JOB_NAME} [${env.BUILD_NUMBER}]",
-                 body: "Build successful: ${env.BUILD_URL}"
-        }
-        failure {
-            mail to: 'developer@example.com',
-                 subject: "Pipeline Failed: ${env.JOB_NAME} [${env.BUILD_NUMBER}]",
-                 body: "Build failed: ${env.BUILD_URL}"
         }
     }
 }
