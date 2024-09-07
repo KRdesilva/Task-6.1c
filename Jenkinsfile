@@ -1,43 +1,83 @@
 pipeline {
     agent any
     environment {
-        DIRECTORY_PATH = '/path/to/code'
-        TESTING_ENVIRONMENT = 'staging'
-        PRODUCTION_ENVIRONMENT = 'production'
+        // Set your email configuration here
+        EMAIL_RECIPIENT = 'kavindyadesilva19@gmail.com'
+        EMAIL_SUBJECT = "Build #${env.BUILD_NUMBER} - ${currentBuild.result}"
+        EMAIL_BODY = """\
+        Build result: ${currentBuild.result}
+        
+        Job Name: ${env.JOB_NAME}
+        Build Number: ${env.BUILD_NUMBER}
+        Build URL: ${env.BUILD_URL}
+        """
     }
     stages {
+        stage('Checkout SCM') {
+            steps {
+                // Checkout the source code from Git
+                checkout scm
+            }
+        }
         stage('Build') {
             steps {
-                echo "Fetching source code from directory: ${env.DIRECTORY_PATH}"
-                echo "Compile the code and generate any necessary artifacts"
+                script {
+                    if (isUnix()) {
+                        sh './your-build-script.sh'
+                    } else {
+                        bat 'your-build-script.bat'
+                    }
+                }
             }
         }
-        stage('Test') {
+        stage('Unit and Integration Tests') {
             steps {
-                echo "Running unit tests"
-                echo "Running integration tests"
+                script {
+                    echo 'Running Unit and Integration Tests...'
+                    // Add your test commands here
+                }
             }
         }
-        stage('Code Quality Check') {
+        stage('Code Analysis') {
             steps {
-                echo "Checking the quality of the code"
+                script {
+                    echo 'Running Code Analysis...'
+                    // Add your code analysis commands here
+                }
             }
         }
-        stage('Deploy') {
+        stage('Security Scan') {
             steps {
-                echo "Deploying the application to ${env.TESTING_ENVIRONMENT}"
+                script {
+                    echo 'Running Security Scan...'
+                    // Add your security scan commands here
+                }
             }
         }
-        stage('Approval') {
+        stage('Deploy to Staging') {
             steps {
-                echo "Waiting for manual approval"
-                sleep 10
+                script {
+                    echo 'Deploying to Staging...'
+                    // Add your deployment commands here
+                }
             }
         }
-        stage('Deploy to Production') {
-            steps {
-                echo "Deploying the application to ${env.PRODUCTION_ENVIRONMENT}"
+    }
+    post {
+        always {
+            script {
+                emailext (
+                    to: "${EMAIL_RECIPIENT}",
+                    subject: "${EMAIL_SUBJECT}",
+                    body: "${EMAIL_BODY}"
+                )
             }
+        }
+        success {
+            echo 'Build succeeded!'
+        }
+        failure {
+            echo 'Build failed!'
         }
     }
 }
