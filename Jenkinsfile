@@ -1,35 +1,31 @@
 pipeline {
     agent any
-
+    
     stages {
         stage('Build') {
             steps {
-                echo "Building the code using Maven."
+                echo 'Building the code using Maven.' 
             }
         }
         stage('Unit and Integration Tests') {
             steps {
-                echo 'Running Unit tests with JavaUnit...'
-                echo "Running integration tests with Selenium..."
+                echo 'Running unit tests with JavaUnit...' 
+                echo 'Running integration tests with Selenium...' 
             }
         }
         stage('Code Analysis') {
             steps {
-                script {
-                    echo 'Analyzing code quality with SonarQube...'
-                    // Add your code analysis commands here
-                }
+                echo 'Analyzing code quality with SonarQube...' 
             }
         }
         stage('Security Scan') {
             steps {
-                echo 'Scanning for vulnerabilities with SAST scanner...'
-                // Add your security scan commands here
+                echo 'Scanning for vulnerabilities with SAST scanner..'
             }
         }
         stage('Deploy to Staging') {
             steps {
-                echo 'Deploying application to staging server using AWS...'
+                echo 'Deploying application to staging server using AWS..'
             }
         }
         stage('Integration Tests on Staging') {
@@ -39,20 +35,20 @@ pipeline {
         }
         stage('Deploy to Production') {
             steps {
-                echo 'Deploying application to production server using AWS tools...'
+                echo 'Deploying application to production server using AWS tools..'
             }
         }
     }
-
+  
     post {
         success {
-            mail to: "s224755066@deakin.edu.au",
-                 subject: "Pipeline success - Build # ${currentBuild.number}",
-                 body: "The pipeline has successfully completed all steps. Build logs are attached."
+            mail to: "diltharanethmini@gmail.com",
+                 subject: "Pipeline Success - Build # ${currentBuild.number}",
+                 body: "The pipeline has successfully completed all stages. Build logs are attached."
         }
         failure {
-            mail to: "s224755066@deakin.edu.au",
-                 subject: "Pipeline failure - Build # ${currentBuild.number}",
+            mail to: "diltharanethmini@gmail.com",
+                 subject: "Pipeline Failure - Build # ${currentBuild.number}",
                  body: "The pipeline has failed at stage ${currentStage.name}. Build logs are attached."
         }
     }
