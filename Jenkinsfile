@@ -1,85 +1,95 @@
 pipeline {
     agent any
 
-    stages {
-        stage('Checkout SCM') {
-            steps {
-                // Checkout the code from your Git repository
-                checkout scm
-            }
-        }
+    // Define environment variables for notifications
+    environment {
+        RECIPIENT_EMAIL = 'your.email@example.com' // replace with your email address
+    }
 
+    stages {
+        // Stage 1: Build
         stage('Build') {
             steps {
-                script {
-                    // Check if the environment is Windows, and run the batch script if it exists
-                    if (isUnix()) {
-                        echo "Running on a Unix system"
-                        // Add Unix-specific build commands here if needed
-                    } else {
-                        echo "Running on a Windows system"
-                        // Ensure the batch script exists in the repository and is correctly referenced
-                        bat '''
-                            echo "Executing build script..."
-                            if exist your-build-script.bat (
-                                call your-build-script.bat
-                            ) else (
-                                echo "Batch script not found!"
-                                exit /b 1
-                            )
-                        '''
-                    }
-                }
+                echo 'Building the code...'
+                // Specify build tool such as Maven, Gradle, etc.
+                // Example: Use Maven to build the project
+                sh 'mvn clean package' 
             }
         }
 
+        // Stage 2: Unit and Integration Tests
         stage('Unit and Integration Tests') {
             steps {
-                script {
-                    // Run unit and integration tests
-                    echo 'Running Unit and Integration Tests...'
-                    // Add test commands here
-                }
+                echo 'Running unit and integration tests...'
+                // Specify the test automation tools, e.g., JUnit for unit tests and TestNG for integration tests
+                sh 'mvn test' // Running tests with Maven
             }
         }
 
+        // Stage 3: Code Analysis
         stage('Code Analysis') {
             steps {
-                script {
-                    echo 'Running Code Analysis...'
-                    // Add code analysis commands here
-                }
+                echo 'Analyzing code quality...'
+                // Specify a code analysis tool like SonarQube or Checkstyle
+                sh 'mvn sonar:sonar' // Example with SonarQube
             }
         }
 
+        // Stage 4: Security Scan
         stage('Security Scan') {
             steps {
-                script {
-                    echo 'Running Security Scan...'
-                    // Add security scan commands here
+                echo 'Performing security scan...'
+                // Specify a security scan tool like OWASP Dependency-Check or Snyk
+                sh 'dependency-check --scan ./ --format XML' // Example with OWASP Dependency-Check
+            }
+            post {
+                always {
+                    // Send email notification after Security Scan
+                    emailext subject: "Security Scan Status: ${currentBuild.currentResult}",
+                        body: "The Security Scan stage has completed. Status: ${currentBuild.currentResult}.",
+                        recipientProviders: [[$class: 'DevelopersRecipientProvider']],
+                        to: "${RECIPIENT_EMAIL}",
+                        attachLog: true
                 }
             }
         }
 
+        // Stage 5: Deploy to Staging
         stage('Deploy to Staging') {
             steps {
-                script {
-                    echo 'Deploying to Staging...'
-                    // Add deployment commands here
-                }
+                echo 'Deploying to staging environment...'
+                // Specify deployment step, e.g., using AWS CLI, SCP to EC2, etc.
+                sh 'scp target/*.war ec2-user@staging-server:/path/to/deploy'
+            }
+        }
+
+        // Stage 6: Integration Tests on Staging
+        stage('Integration Tests on Staging') {
+            steps {
+                echo 'Running integration tests on staging...'
+                // Run integration tests on the staging server
+                // Specify the test tools used for this stage
+            }
+        }
+
+        // Stage 7: Deploy to Production
+        stage('Deploy to Production') {
+            steps {
+                echo 'Deploying to production environment...'
+                // Specify production deployment step, e.g., AWS CLI, Docker, Kubernetes, etc.
+                sh 'scp target/*.war ec2-user@prod-server:/path/to/deploy'
             }
         }
     }
 
     post {
         always {
-            echo 'Pipeline finished!'
-        }
-        success {
-            echo 'Build succeeded!'
-        }
-        failure {
-            echo 'Build failed!'
+            // Send email notification after Unit Tests and Security Scan stages
+            emailext subject: "Build Status: ${currentBuild.currentResult}",
+                body: "The pipeline has completed. Status: ${currentBuild.currentResult}.",
+                recipientProviders: [[$class: 'DevelopersRecipientProvider']],
+                to: "${RECIPIENT_EMAIL}",
+                attachLog: true
         }
     }
 }
