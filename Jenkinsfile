@@ -1,83 +1,64 @@
 pipeline {
     agent any
-    environment {
-        // Set your email configuration here
-        EMAIL_RECIPIENT = 'kavindyadesilva19@gmail.com'
-        EMAIL_SUBJECT = "Build #${env.BUILD_NUMBER} - ${currentBuild.result}"
-        EMAIL_BODY = """\
-        Build result: ${currentBuild.result}
-        
-        Job Name: ${env.JOB_NAME}
-        Build Number: ${env.BUILD_NUMBER}
-        Build URL: ${env.BUILD_URL}
-        """
-    }
-    stages {
-        stage('Checkout SCM') {
-            steps {
-                // Checkout the source code from Git
-                checkout scm
-            }
-        }
+    
+        stages {
         stage('Build') {
             steps {
-                script {
-                    if (isUnix()) {
-                        sh './your-build-script.sh'
-                    } else {
-                        bat 'your-build-script.bat'
-                    }
+                echo "Building the code using Maven."
                 }
             }
-        }
+        
         stage('Unit and Integration Tests') {
             steps {
-                script {
-                    echo 'Running Unit and Integration Tests...'
-                    // Add your test commands here
+                    echo 'Running Unit tests with JavaUnit...'
+                    echo "Running integration tests with Selenium..."
                 }
             }
-        }
+        
         stage('Code Analysis') {
             steps {
                 script {
-                    echo 'Running Code Analysis...'
+                    echo 'Analyzing code quality with SonarQube...'
                     // Add your code analysis commands here
                 }
             }
-        }
+               
         stage('Security Scan') {
             steps {
-                script {
-                    echo 'Running Security Scan...'
+                    echo 'Scanning for vulnerabilities with SAST scanner...'
                     // Add your security scan commands here
                 }
             }
-        }
+        
         stage('Deploy to Staging') {
             steps {
-                script {
-                    echo 'Deploying to Staging...'
-                    // Add your deployment commands here
+                    echo 'Running integration tests on staging environment...'
                 }
             }
-        }
-    }
-    post {
-        always {
-            script {
-                emailext (
-                    to: "${EMAIL_RECIPIENT}",
-                    subject: "${EMAIL_SUBJECT}",
-                    body: "${EMAIL_BODY}"
-                )
+       stage('IntegrationTests on Staging') {
+            steps {
+                    echo 'Deploying application to staging server using AWS...'
+                }
             }
-        }
+      stage('Deploy to Production') {
+            steps {
+                    echo 'Deploying application to production server using AWS tools...'
+                }
+            }
+        }     
+            
+    post {
         success {
-            echo 'Build succeeded!'
+            mail to:"s224755066@deakin.edu.au",
+                subject: "Pipeline success - Build # ${currentBuild.number}",
+                body: "The pipepline has successfully completed all steps. Build logs are attached."
         }
+        
         failure {
-            echo 'Build failed!'
+             mail to:"s224755066@deakin.edu.au",
+                subject: "Pipeline failure - Build # ${currentBuild.number}",
+                body: "The pipepline has failed at stage ${currentStage.name}. Build logs are attached."
+        
         }
     }
 }
