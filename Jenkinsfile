@@ -1,45 +1,42 @@
 pipeline {
     agent any
+    environment {
+        DIRECTORY_PATH = '/path/to/code'
+        TESTING_ENVIRONMENT = 'staging'
+        PRODUCTION_ENVIRONMENT = 'production'
+    }
     stages {
         stage('Build') {
             steps {
-                script {
-                    if (isUnix()) {
-                        sh 'nohup ./your-build-script.sh &'
-                    } else {
-                        bat 'start /b your-build-script.bat'
-                    }
-                }
+                echo "Fetching source code from directory: ${env.DIRECTORY_PATH}"
+                echo "Compile the code and generate any necessary artifacts"
             }
         }
-
-        stage('Unit and Integration Tests') {
+        stage('Test') {
             steps {
-                script {
-                    echo 'Running Unit and Integration Tests...'
-                    // Add your test commands here
-                }
+                echo "Running unit tests"
+                echo "Running integration tests"
             }
         }
-
-        stage('Code Analysis') {
+        stage('Code Quality Check') {
             steps {
-                echo 'Running Code Analysis...'
-                // Add your code analysis commands here
+                echo "Checking the quality of the code"
             }
         }
-
-        stage('Security Scan') {
+        stage('Deploy') {
             steps {
-                echo 'Running Security Scan...'
-                // Add your security scan commands here
+                echo "Deploying the application to ${env.TESTING_ENVIRONMENT}"
             }
         }
-
-        stage('Deploy to Staging') {
+        stage('Approval') {
             steps {
-                echo 'Deploying to Staging...'
-                // Add your deployment commands here
+                echo "Waiting for manual approval"
+                sleep 10
+            }
+        }
+        stage('Deploy to Production') {
+            steps {
+                echo "Deploying the application to ${env.PRODUCTION_ENVIRONMENT}"
             }
         }
     }
