@@ -7,7 +7,8 @@ pipeline {
                     if (isUnix()) {
                         sh 'nohup ./your-build-script.sh &'
                     } else {
-                        bat 'start /b your-build-script.bat'
+                        // Run the batch file, ensure it exists and is correctly referenced
+                        bat 'your-build-script.bat'
                     }
                 }
             }
@@ -15,10 +16,8 @@ pipeline {
 
         stage('Unit and Integration Tests') {
             steps {
-                script {
-                    echo 'Running Unit and Integration Tests...'
-                    // Add your test commands here
-                }
+                echo 'Running Unit and Integration Tests...'
+                // Add your test commands here
             }
         }
 
