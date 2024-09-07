@@ -1,61 +1,110 @@
 pipeline {
     agent any
+
     environment {
+        // Define environment variables if necessary
         EMAIL_RECIPIENT = 's224755066@deakin.edu.au'
     }
+
     stages {
+        stage('Checkout') {
+            steps {
+                // Checkout the code from the GitHub repository
+                checkout scm
+            }
+        }
+
         stage('Build') {
             steps {
-                echo 'Building the code...'
-                sh 'mvn clean package'  // Replace with your build command
+                script {
+                    echo 'Building the code...'
+                    // Example using Maven. Replace with your build tool if needed.
+                    sh 'mvn clean install'
+                }
             }
         }
+
         stage('Unit and Integration Tests') {
             steps {
-                echo 'Running unit and integration tests...'
-                sh 'mvn test'  // Replace with your test command
+                script {
+                    echo 'Running unit and integration tests...'
+                    // Example using Maven. Replace with your test tool if needed.
+                    sh 'mvn test'
+                }
             }
         }
+
         stage('Code Analysis') {
             steps {
-                echo 'Analyzing code with SonarQube...'
-                sh 'sonar-scanner'  // Replace with your SonarQube command
+                script {
+                    echo 'Performing code analysis...'
+                    // Example using SonarQube. Replace with your code analysis tool if needed.
+                    sh 'sonar-scanner'
+                }
             }
         }
+
         stage('Security Scan') {
             steps {
-                echo 'Performing security scan...'
-                sh 'zap-cli quick-scan http://your-staging-url'  // Replace with your security scan command
+                script {
+                    echo 'Performing security scan...'
+                    // Example using OWASP Dependency-Check. Replace with your security scan tool if needed.
+                    sh 'dependency-check --project MyProject --scan .'
+                }
             }
         }
+
         stage('Deploy to Staging') {
             steps {
-                echo 'Deploying to staging server...'
-                sh 'aws deploy create-deployment --application-name MyApp --deployment-group-name MyDeploymentGroup --revision location=s3://mybucket/myapp.zip'  // Replace with your deployment command
+                script {
+                    echo 'Deploying to staging...'
+                    // Replace with your deployment script
+                    sh './deploy-to-staging.sh'
+                }
             }
         }
+
         stage('Integration Tests on Staging') {
             steps {
-                echo 'Running integration tests on staging...'
-                sh 'selenium-server -role hub'  // Replace with your integration test command
+                script {
+                    echo 'Running integration tests on staging...'
+                    // Replace with your integration test script
+                    sh './integration-tests.sh'
+                }
             }
         }
+
         stage('Deploy to Production') {
             steps {
-                echo 'Deploying to production server...'
-                sh 'aws deploy create-deployment --application-name MyApp --deployment-group-name MyDeploymentGroup --revision location=s3://mybucket/myapp.zip'  // Replace with your production deployment command
+                script {
+                    echo 'Deploying to production...'
+                    // Replace with your deployment script
+                    sh './deploy-to-production.sh'
+                }
             }
         }
     }
+
     post {
-        always {
-            echo 'Sending email notifications...'
+        success {
+            echo 'Pipeline succeeded.'
+            // Send success email
             emailext (
-                to: "${EMAIL_RECIPIENT}",
-                subject: "Build ${currentBuild.currentResult}: Job '${env.JOB_NAME}' (${env.BUILD_NUMBER})",
-                body: "Build ${currentBuild.currentResult}: Job '${env.JOB_NAME}' (${env.BUILD_NUMBER})\n\n" +
-                      "See console output at: ${env.BUILD_URL}",
-                attachmentsPattern: '**/target/*.log'  // Adjust as needed
+                to: "${env.EMAIL_RECIPIENT}",
+                subject: "Pipeline Succeeded",
+                body: "The pipeline has successfully completed.",
+                attachmentsPattern: '**/test-results/*.xml'
+            )
+        }
+
+        failure {
+            echo 'Pipeline failed.'
+            // Send failure email
+            emailext (
+                to: "${env.EMAIL_RECIPIENT}",
+                subject: "Pipeline Failed",
+                body: "The pipeline has failed. Please check the logs.",
+                attachmentsPattern: '**/test-results/*.xml'
             )
         }
     }
