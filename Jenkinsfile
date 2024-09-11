@@ -42,12 +42,12 @@ pipeline {
   
     post {
         success {
-            mail to: "kavindyadesilva19@gmail.com",
+            mail to: "diltharanethmini@gmail.com",
                  subject: "Pipeline Success - Build # ${currentBuild.number}",
                  body: "The pipeline has successfully completed all stages. Build logs are attached."
         }
         failure {
-            mail to: "kavindyadesilva19@gmail.com",
+            mail to: "diltharanethmini@gmail.com",
                  subject: "Pipeline Failure - Build # ${currentBuild.number}",
                  body: "The pipeline has failed at stage ${currentStage.name}. Build logs are attached."
         }
